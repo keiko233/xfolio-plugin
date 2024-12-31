@@ -1,0 +1,38 @@
+name: Build
+
+on: [push]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    name: Build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Init Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 9
+          run_install: |
+            - recursive: true
+              args: [--frozen-lockfile, --strict-peer-dependencies]
+
+      - name: Build
+        run: |
+          pnpm build
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Commit ${{ github.sha }}
+          tag_name: pre-release
+          prerelease: true
+          files: ./dist/xfolio-plugin.user.js
